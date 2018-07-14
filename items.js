@@ -55,10 +55,10 @@ function ItemDAO(database) {
 
         items.aggregate([
           {$group:{
-	           _id: {category: "$category"},
+	           _id: "$category",
 	            num: {$sum: 1}
             }},
-            {$sort: {"_id.category": 1}}
+            {$sort: {"_id": 1}}
         ]).toArray(function(err,docs){
           assert.equal(null,err);
 
@@ -108,7 +108,7 @@ function ItemDAO(database) {
          * than you do for other categories.
          *
          */
-          console.log("getItems is running");
+          console.log("getItems is running, category: ",category);
          let items = this.db.collection("item");
 
          items.aggregate([
@@ -117,6 +117,7 @@ function ItemDAO(database) {
            {$skip: (page*itemsPerPage)},
           {$limit: itemsPerPage}
         ]).toArray(function (err, docs){
+          assert.equal(err, null);
           callback(docs);
         });
 

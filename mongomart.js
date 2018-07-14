@@ -55,7 +55,7 @@ MongoClient.connect('mongodb://localhost:27017/mongomart', function(err, db) {
     "use strict";
 
     //assert.equal(null, err);
-    
+
     console.log("Successfully connected to MongoDB.");
 
     var items = new ItemDAO(db);
@@ -68,7 +68,7 @@ MongoClient.connect('mongodb://localhost:27017/mongomart', function(err, db) {
         "use strict";
 
         var page = req.query.page ? parseInt(req.query.page) : 0;
-        var category = req.query.category ? req.query.category : "All";
+        var category = req.query.category ? req.query.category : "Apparel";
 
         items.getCategories(function(categories) {
 
