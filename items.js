@@ -25,8 +25,7 @@ function ItemDAO(database) {
     this.db = database;
 
     this.getCategories = function(callback) {
-        "use strict";
-
+      console.log("getCategories is running");
         /*
         * TODO-lab1A
         *
@@ -51,21 +50,37 @@ function ItemDAO(database) {
         * to the callback.
         *
         */
+        "use strict";
+        let items = this.db.collection("item");
 
-        var categories = [];
-        var category = {
+        items.aggregate([
+          {$group:{
+	           _id: {category: "$category"},
+	            num: {$sum: 1}
+            }},
+            {$sort: {"_id.category": 1}}
+        ]).toArray(function(err,docs){
+          assert.equal(null,err);
+
+          let total = 0;
+          docs.forEach(function(doc){
+            total += doc.num;
+            console.log(doc);
+          });
+
+          docs.push({
             _id: "All",
-            num: 9999
-        };
+            num: total
+          });
+          console.log(docs);
+          callback(docs);
 
-        categories.push(category)
+        });
 
-        // TODO-lab1A Replace all code above (in this method).
 
-        // TODO Include the following line in the appropriate
-        // place within your code to pass the categories array to the
-        // callback.
-        callback(categories);
+
+
+
     }
 
 
@@ -93,25 +108,24 @@ function ItemDAO(database) {
          * than you do for other categories.
          *
          */
+          console.log("getItems is running");
+         let items = this.db.collection("item");
 
-        var pageItem = this.createDummyItem();
-        var pageItems = [];
-        for (var i=0; i<5; i++) {
-            pageItems.push(pageItem);
-        }
+         items.aggregate([
+           {$match: {"category": category}},
+           {$sort: {"_id": 1}},
+           {$skip: (page*itemsPerPage)},
+          {$limit: itemsPerPage}
+        ]).toArray(function (err, docs){
+          callback(docs);
+        });
 
-        // TODO-lab1B Replace all code above (in this method).
-
-        // TODO Include the following line in the appropriate
-        // place within your code to pass the items for the selected page
-        // to the callback.
-        callback(pageItems);
     }
 
 
     this.getNumItems = function(category, callback) {
         "use strict";
-
+        console.log("getNumItems is running");
         var numItems = 0;
 
         /*
@@ -131,7 +145,12 @@ function ItemDAO(database) {
 
          // TODO Include the following line in the appropriate
          // place within your code to pass the count to the callback.
-        callback(numItems);
+         let items = this.db.collection('item');
+         items.find({"category": category}).count(function(err,count){
+           assert.equal(err,null);
+           callback(count);
+         });
+
     }
 
 
