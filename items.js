@@ -53,6 +53,7 @@ function ItemDAO(database) {
         "use strict";
         let items = this.db.collection("item");
 
+
         items.aggregate([
           {$group:{
 	           _id: "$category",
@@ -111,6 +112,7 @@ function ItemDAO(database) {
           console.log("getItems is running, category: ",category);
          let items = this.db.collection("item");
 
+         if (category !== "All"){
          items.aggregate([
            {$match: {"category": category}},
            {$sort: {"_id": 1}},
@@ -120,6 +122,19 @@ function ItemDAO(database) {
           assert.equal(err, null);
           callback(docs);
         });
+      }
+      else{ //remove the $match: category query, everything else the same
+        items.aggregate([
+          {$sort: {"_id": 1}},
+          {$skip: (page*itemsPerPage)},
+         {$limit: itemsPerPage}
+       ]).toArray(function (err, docs){
+         assert.equal(err, null);
+         callback(docs);
+       });
+
+      }
+
 
     }
 
@@ -181,19 +196,19 @@ function ItemDAO(database) {
          * description. You should simply do this in the mongo shell.
          *
          */
+         let items = this.db.collection('item');
+         items.aggregate([
+           {$match: {$text: {$search: query}}},
+           {$sort: {_id: 1}},
+           {$skip: (page*itemsPerPage)},
+           {$limit: itemsPerPage}
+         ]).toArray(function(err,items){
+           console.log("searchItems has ran. docs: ",items, "err: ", err);
+           callback(items);
+         });
 
-        var item = this.createDummyItem();
-        var items = [];
-        for (var i=0; i<5; i++) {
-            items.push(item);
-        }
 
-        // TODO-lab2A Replace all code above (in this method).
 
-        // TODO Include the following line in the appropriate
-        // place within your code to pass the items for the selected page
-        // of search results to the callback.
-        callback(items);
     }
 
 
@@ -214,8 +229,13 @@ function ItemDAO(database) {
         * a SINGLE text index on title, slogan, and description. You should
         * simply do this in the mongo shell.
         */
+        let items = this.db.collection('item');
+        items.find({$text: {$search: query}}).count(function(err,num){
+          assert.equal(null,err);
+          callback(num);
+        })
 
-        callback(numItems);
+
     }
 
 

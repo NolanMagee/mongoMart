@@ -68,7 +68,7 @@ MongoClient.connect('mongodb://localhost:27017/mongomart', function(err, db) {
         "use strict";
 
         var page = req.query.page ? parseInt(req.query.page) : 0;
-        var category = req.query.category ? req.query.category : "Apparel";
+        var category = req.query.category ? req.query.category : "All";
 
         items.getCategories(function(categories) {
 
