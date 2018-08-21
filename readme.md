@@ -1,6 +1,5 @@
 MongoMart application for Mongo University Final Project!
 
+I am implementing a backend using Express and MongoDB for an ecommerce platform.
 
-I am implementing a mongo backend for a provided ecommerce platform template.
-
-Let's hope it works!
+This has browsing, search, and shopping cart functionality

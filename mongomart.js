@@ -51,12 +51,18 @@ var ITEMS_PER_PAGE = 5;
 // Hardcoded USERID for use with the shopping cart portion
 var USERID = "558098a65133816958968d88";
 
-MongoClient.connect('mongodb://localhost:27017/mongomart', function(err, db) {
+let password = encodeURIComponent("romainvicta")
+
+let uri = `mongodb+srv://augustus:${password}@cluster0-fuxyp.mongodb.net/mongomart?retryWrites=true`
+
+MongoClient.connect(uri, function(err, client) {
     "use strict";
+    //db = db.db("mongomart");
+    assert.equal(null, err);
 
-    //assert.equal(null, err);
+    let db = client.db('mongomart')
 
-    console.log("Successfully connected to MongoDB.");
+    console.log("Successfully connected to MongoDB. db: ");
 
     var items = new ItemDAO(db);
     var cart = new CartDAO(db);
@@ -155,7 +161,7 @@ MongoClient.connect('mongodb://localhost:27017/mongomart', function(err, db) {
 
             items.getRelatedItems(function(relatedItems) {
 
-                console.log(relatedItems);
+                console.log("reviews: ", reviews);
                 res.render("item",
                            {
                                userId: USERID,

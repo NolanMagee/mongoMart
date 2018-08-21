@@ -12,6 +12,24 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
+  Next Steps
+Once you know you have a clear understanding of all the concepts presented in the exam labs and the course content in general then there are probably a few exercises you can adapt from the "mongomart" code given as a common practice of "refactoring" the existing code towards several new goals.
+
+The code "masks" errors which can be produced. Change the implementation of the DAO sections to pass any error in the callback response and handle error messages in the routes instead. You need only log errors to console, but you might consider a "developer mode" where you would report errors on a web page as well.
+
+Consider refactoring the code to use Promises. Promises are a modern way to avoid nested callback calls and make the code cleaner and easier to read and maintain. Consider then refactoring the base Promise implementation to use the async/await keywords available in modern JavaScript environments and current Long Term Support NodeJS releases.
+
+Add routes for a JSON API which simply returns all required data for the "pages" rather than rendering templates.
+
+See if you can find more possible uses for the $facet aggregation pipeline stage in providing data.
+
+Use the JSON API you developed as the back end source for a Single Page Web Application (SPA) or other port of the application display presentation.
+
+Look at implementing all the API part using [Stitch][1]
+
+Taking an existing application and looking at refactoring points just as outlined above is a great way to learn languages, frameworks and specific API's. In addition to the suggested "pathway" outlined above, you can also think of new "features" to add and the different components you need in order to implement them.
+
+
 */
 
 
@@ -23,7 +41,8 @@ function CartDAO(database) {
     "use strict";
 
     this.db = database;
-
+    let cart = this.db.collection('cart');
+    let items = this.db.collection('item');
 
     this.getCart = function(userId, callback) {
         "use strict";
@@ -37,20 +56,10 @@ function CartDAO(database) {
         * callback function.
         *
         */
-
-        var userCart = {
-            userId: userId,
-            items: []
-        }
-        var dummyItem = this.createDummyItem();
-        userCart.items.push(dummyItem);
-
-        // TODO-lab5 Replace all code above (in this method).
-
-        // TODO Include the following line in the appropriate
-        // place within your code to pass the userCart to the
-        // callback.
-        callback(userCart);
+        cart.findOne({userId: userId}, function(err, item){
+          assert.equal(null,err);
+          callback(item);
+        });
     }
 
 
@@ -81,10 +90,15 @@ function CartDAO(database) {
          * how cart.itemInCart is used in the mongomart.js app.
          *
          */
-
-        callback(null);
-
-        // TODO-lab6 Replace all code above (in this method).
+         this.db.collection('cart').findOne(
+   {  userId, "items._id": itemId },
+   { "items.$": 1 },
+   (err, item) => {
+     if (item != null)
+       item = item.items[0];
+     callback(item);
+   }
+  )
     }
 
 
@@ -171,7 +185,9 @@ function CartDAO(database) {
         * this problem. There are several ways to solve this. By far, the
         * easiest is to use the $ operator. See:
         * https://docs.mongodb.org/manual/reference/operator/update/positional/
-        *
+        *var updateDoc = (quantity === 0)
+        ? { "$pull": { items: { _id: itemId } } }
+        : { "$set": { "items.$.quantity": quantity } };
         */
 
         var userCart = {
